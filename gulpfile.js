@@ -2,6 +2,7 @@ const gulp = require("gulp");
 const source = require("vinyl-source-stream");
 const browserify = require("browserify");
 const sass = require("gulp-sass")(require("sass"));
+var envify = require("envify/custom");
 
 const dist = "D:/OSPanel/domains/vue-glo-admin/admin";
 
@@ -20,6 +21,8 @@ gulp.task("copy-assets", () => {
 gulp.task("build-js", () => {
   return browserify("./app/src/main.js", { debug: true })
     .transform("babelify", { presets: ["@babel/preset-env"], sourceMaps: true })
+    .transform(vueify)
+    .transform({ global: true }, envify({ NODE_ENV: "production" }))
     .bundle()
     .pipe(source("bundle.js"))
     .pipe(gulp.dest(dist));

@@ -8,9 +8,17 @@
     <title>Document</title>
   </head>
   <body>
-    <input type="text" />
-    <button class="button_create-page">Создать страницу</button>
-    <button class="button_delete-page">Удалить страницу</button>
+    <div id="app">
+      <input type="text" v-model="newPageName" name="name" />
+      <button class="button_create-page" @click="createPage">
+        Создать страницу
+      </button>
+      <div v-for="(page, index) in pageList">
+        <h1>
+          {{index + 1}}. {{page}} <a href="#" @click="deletePage(page)">(X)</a>
+        </h1>
+      </div>
+    </div>
     <script src="bundle.js"></script>
   </body>
 </html>
