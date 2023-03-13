@@ -10,11 +10,11 @@ module.exports = class Editor {
     this.iframe = document.querySelector("iframe");
   }
 
-  open(page) {
+  open(page, cb) {
     this.currentPage = page;
 
     axios
-      .get("../" + page)
+      .get("../" + page + "?rnd=" + Math.random())
       .then((res) => DOMHelper.parseStrToDom(res.data)) // Создаем DOM-дерево, в котором сохраняем полученный в виде строки ответ от сервера, представляющий собой код оригинальной страницы html
       .then(DOMHelper.wrapTextNodes) // В созданном DOM-дереве создаем обертки для возможности редактирования текстовых полей
       .then((dom) => {
@@ -25,7 +25,8 @@ module.exports = class Editor {
       .then((html) => axios.post("./api/saveTempPage.php", { html: html })) // Сохраняем этот код в файле temp.html
       .then(() => this.iframe.load("../temp.html")) // Используем библиотеку iframe-load, загружаем в iframe код из файла temp.html
       .then(() => this.enableEditing()) // Включаем contentEditable у тектовых эллементов
-      .then(() => this.injectStyles()); // подключение стилей
+      .then(() => this.injectStyles()) // подключение стилей
+      .then(cb);
   }
 
   enableEditing() {
@@ -55,10 +56,13 @@ module.exports = class Editor {
     this.iframe.contentDocument.head.appendChild(style);
   }
 
-  save() {
+  save(onSuccess, onError) {
     const newDom = this.virtualDom.cloneNode(this.virtualDom);
     DOMHelper.unwrapTextNodes(newDom);
     const html = DOMHelper.serializeDomToStr(newDom);
-    axios.post("./api/savePage.php", { pageName: this.currentPage, html });
+    axios
+      .post("./api/savePage.php", { pageName: this.currentPage, html })
+      .then(onSuccess)
+      .catch(onError);
   }
 };
